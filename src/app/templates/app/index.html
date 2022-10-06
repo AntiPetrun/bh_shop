@@ -1,0 +1,12 @@
+{% extends 'app/basic.html'%}
+
+{%block title %}MAIN{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% for category in categories %}
+        <h1>{{ category.name }}</h1>
+        <p>{{ category.descr|default_if_none:'description' }}</p>
+        <p>{{ category.id }}</p>
+    {% endfor %}
+{% endblock %}

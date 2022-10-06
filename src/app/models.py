@@ -92,13 +92,13 @@ class Product(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.PROTECT,
+        on_delete=models.DO_NOTHING,
         related_name='orders',
         verbose_name='покупатель'
     )
     product = models.ForeignKey(
         Product,
-        on_delete=models.PROTECT,
+        on_delete=models.DO_NOTHING,
         related_name='orders',
         verbose_name='товар'
     )
