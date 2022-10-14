@@ -1,5 +1,5 @@
-from django.contrib import admin  # type: ignore
-from .models import Category, Product, Order  # type: ignore
+from django.contrib import admin
+from .models import Category, Product, Order, Contact
 
 
 class ProductTabularInline(admin.TabularInline):
@@ -49,7 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
         ('Основные настройки',
          {'fields': ('title', 'article', 'category', 'price'), 'description': 'Описание'}),
         ('Дополнительные настройки',
-         {'fields': ('is_published', 'descr', 'count'), 'description': 'Описание'})
+         {'fields': ('is_published', 'descr', 'count', 'image'), 'description': 'Описание'})
     )
     list_editable = ('category',)
     prepopulated_fields = {'descr': ('title', 'article',)}
@@ -68,3 +68,14 @@ class OrderAdmin(admin.ModelAdmin):
 appadmin.register(Category, CategoryAdmin)
 appadmin.register(Product, ProductAdmin)
 appadmin.register(Order, OrderAdmin)
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'message', 'date_created')
+    list_filter = ('name', 'email')
+    date_hierarchy = 'date_created'
+
+
+class ContactManager(ContactAdmin):
+    readonly_fields = ('name', 'email', 'message', 'date_created')
