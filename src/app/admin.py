@@ -6,22 +6,12 @@ class ProductTabularInline(admin.TabularInline):
     model = Product
 
 
-class AppAdminSite(admin.AdminSite):
-    site_header = 'SITE_HEADER'
-    site_title = 'SITE_TITLE'
-    index_title = 'INDEX_TITLE'
-    empty_value_display = 'н/у'
-
-
-appadmin = AppAdminSite(name='appadmin')
-
-
-@admin.action(description='Опубликавать')
+@admin.action(description='Publish')
 def make_published(self, request, queryset):
     queryset.update(is_published=True)
 
 
-@admin.action(description='Не публикавать')
+@admin.action(description='Not publish')
 def make_unpublished(self, request, queryset):
     queryset.update(is_published=False)
 
@@ -33,7 +23,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent', 'is_published')
     list_filter = ('is_published', 'parent')
     search_fields = ('name', 'id')
-    search_help_text = 'Введите имя родительской категории и id категории'
+    search_help_text = 'Enter category or id of category to search'
     inlines = [ProductTabularInline, ]
 
 
@@ -41,15 +31,15 @@ class CategoryAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     actions = (make_published, make_unpublished)
     empty_value_display = 'н/у'
-    list_display = ('title', 'descr', 'article', 'category', 'price', 'count', 'is_published')
+    list_display = ('title', 'descr', 'article', 'category', 'price', 'is_published')
     list_filter = ('is_published', 'category')
-    search_fields = ('title', 'id', 'article', 'price')
-    search_help_text = 'заголовок/id/артикул/цена'
+    search_fields = ('title', 'id')
+    search_help_text = 'Enter title or product id for search results'
     fieldsets = (
-        ('Основные настройки',
-         {'fields': ('title', 'article', 'category', 'price'), 'description': 'Описание'}),
-        ('Дополнительные настройки',
-         {'fields': ('is_published', 'descr', 'count', 'image'), 'description': 'Описание'})
+        ('Main settings',
+         {'fields': ('title', 'article', 'category', 'price'), 'description': 'Description'}),
+        ('Additional settings',
+         {'fields': ('is_published', 'descr', 'image'), 'description': 'Description'})
     )
     list_editable = ('category',)
     prepopulated_fields = {'descr': ('title', 'article',)}
@@ -58,16 +48,11 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     empty_value_display = 'н/у'
-    list_display = ('id', 'user', 'product', 'date_created', 'is_paid')
-    list_filter = ('user', 'is_paid', 'product')
-    search_fields = ('id', 'product')
-    search_help_text = 'id/продукт'
+    list_display = ('id', 'user', 'display_products', 'date_created', 'is_paid')
+    list_filter = ('user', 'is_paid', 'products')
+    search_fields = ('id', 'products')
+    search_help_text = 'Enter order id or product for search results'
     readonly_fields = ('date_created',)
-
-
-appadmin.register(Category, CategoryAdmin)
-appadmin.register(Product, ProductAdmin)
-appadmin.register(Order, OrderAdmin)
 
 
 @admin.register(Contact)

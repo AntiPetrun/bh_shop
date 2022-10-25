@@ -1,5 +1,8 @@
-from django.db import models  # type: ignore
-from django.contrib.auth import get_user_model  # type: ignore
+import uuid
+
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -7,26 +10,26 @@ User = get_user_model()
 class Category(models.Model):
     name = models.CharField(
         max_length=24,
-        verbose_name='название',
-        help_text='макс. 24 символа'
+        verbose_name=_('category name'),
+        help_text=_('max length of category is 24 characters')
     )
     parent = models.ForeignKey(
-        'Category',
+        'self',
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        verbose_name='родительская категория'
+        verbose_name=_('main category')
     )
     descr = models.CharField(
         max_length=140,
         blank=True,
         null=True,
-        verbose_name='описание',
-        help_text='макс. 140 символов'
+        verbose_name=_('description'),
+        help_text=_('max length is 140 symbols')
     )
     is_published = models.BooleanField(
         default=False,
-        verbose_name='опубликовано'
+        verbose_name=_('is published')
     )
 
     def __str__(self):
@@ -34,49 +37,44 @@ class Category(models.Model):
 
     class Meta:
         db_table = 'app_category'
-        verbose_name = 'категория'
-        verbose_name_plural = 'категории'
+        verbose_name = _('category')
+        verbose_name_plural = _('categories')
         ordering = ('name', 'is_published')
 
 
 class Product(models.Model):
+    article = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        verbose_name=_('product article'),
+    )
     title = models.CharField(
         max_length=36,
-        verbose_name='название',
-        help_text='макс. 36 символов'
+        verbose_name=_('product title'),
+        help_text=_('max length of product title is 36 characters')
     )
     descr = models.CharField(
         max_length=140,
         null=True,
         blank=True,
-        verbose_name='описание',
-        help_text='макс. 140 символов'
-    )
-    article = models.CharField(
-        max_length=16,
-        unique=True,
-        verbose_name='артикль',
+        verbose_name=_('description'),
+        help_text=_('max length of description is 140 characters')
     )
     is_published = models.BooleanField(
         default=False,
-        verbose_name='публикации',
+        verbose_name=_('is published'),
     )
     price = models.DecimalField(
         decimal_places=2,
-        max_digits=8,
+        max_digits=6,
         default=0,
-        verbose_name='цена',
-        help_text='9999.99'
-    )
-    count = models.PositiveSmallIntegerField(
-        default=0,
-        verbose_name='количество',
-        help_text='количество товара на складе'
+        verbose_name=_('price'),
+        help_text=_('9999.99')
     )
     category = models.ForeignKey(
-        Category,
+        'Category',
         on_delete=models.PROTECT,
-        verbose_name='категория',
+        verbose_name=_('related category'),
     )
     image = models.ImageField(
         upload_to='products',
@@ -89,8 +87,8 @@ class Product(models.Model):
 
     class Meta:
         db_table = 'app_product'
-        verbose_name = 'Товар'
-        verbose_name_plural = 'Товары'
+        verbose_name = _('product')
+        verbose_name_plural = _('products')
         ordering = ('price', 'title', 'article')
 
 
@@ -98,23 +96,26 @@ class Order(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING,
-        related_name='orders',
-        verbose_name='покупатель'
+        verbose_name=_('consumer')
     )
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.DO_NOTHING,
-        related_name='orders',
-        verbose_name='товар'
+    products = models.ManyToManyField(
+        'Product',
+        related_name='products',
+        verbose_name=_('product')
     )
     date_created = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='дата создания',
+        verbose_name=_('created date'),
     )
     is_paid = models.BooleanField(
         default=False,
-        verbose_name="оплачено"
+        verbose_name=_('is_published')
     )
+
+    def display_products(self, product):
+        return ', '.join(product.title for product in self.products.all())
+
+    display_products.short_description = 'Products'
 
     def __str__(self):
         return f'{self.id}'
@@ -127,16 +128,26 @@ class Order(models.Model):
 
 
 class Contact(models.Model):
-    name = models.CharField(max_length=32)
-    email = models.EmailField(max_length=32)
-    message = models.TextField(blank=True, max_length=255, null=True)
-    date_created = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(
+        max_length=32
+    )
+    email = models.EmailField(
+        max_length=32
+    )
+    message = models.TextField(
+        blank=True,
+        max_length=255,
+        null=True
+    )
+    date_created = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return f'{self.email}'
 
     class Meta:
-        db_table = 'contact'
+        db_table = 'app_contact'
+        verbose_name = _('contact')
+        verbose_name_plural = _('contacts')
         ordering = ('-date_created',)
-        verbose_name = 'contact'
-        verbose_name_plural = 'contacts'
